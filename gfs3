@@ -1,0 +1,76 @@
+Glusterfs3
+ 1  yum install epel-release -y
+    2  yum update -y
+    3  vi /etc/selinux/config
+    4  yum install net-tools mlocate vim curl wget telnet -y
+    5  shutdown
+    6  shutdown  now
+    7  rpm -qa |grep gluster
+    8  yum search centos-release-gluster
+    9  yum install centos-release-gluster6.noarch
+   10  yum install glusterfs gluster-cli glusterfs-libs glusterfs-server
+   11  yum update -y
+   12  wget -P /etc/yum.repos.d/ http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo
+   13  wget -P /etc/yum.repos.d/ http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repoyum install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+   14  rpm -qa |grep gluster
+   15  yum install samba-vfs-glusterfs
+   16  rpm -qa |grep gluster
+   17  yum install samba-vfs-glusterfs
+   18  ip a
+   19  reboot no
+   20  ip a
+   21  lsblk
+   22  yum install glusterfs-server samba -y
+   23  fdisk /dev/sdb
+   24  partprobe /dev/sdb
+   25  pvcreate /dev/sdb1
+   26  vgcreate vg_gluster /dev/sdb1
+   27  lvcreate -L 5G -n brick2 vg_gluster
+   28  mkfs.xfs /dev/vg_gluster/brick2
+   29  lvcreate -L 4G -n brick1 vg_gluster
+   30  mkfs.xfs /dev/vg_gluster/brick1
+   31  mkdir -p /bricks/brick{1,2}
+   32  mount /dev/vg_gluster/brick1 /bricks/brick1
+   33  mount /dev/vg_gluster/brick2 /bricks/brick2
+   34  vim /etc/fstab
+   35  mount -a
+   36  systemctl enable glusterd.service
+   37  systemctl start glusterd.service
+   38  hostname
+   39  ip a
+   40  vim /etc/hsots
+   41  vim /etc/hosts
+   42  service network restart
+   43   yum install firewalld -y
+   44   service firewalld start
+   45  chkconfig firewalld on
+   46  firewall-cmd --zone=public --add-port=24007-24008/tcp --permanent
+   47  firewall-cmd --reload
+   48  hostname
+   49  gluster peer status
+   50  firewall-cmd --zone=public --add-port=24009/tcp --permanent
+   51  firewall-cmd --reload
+   52  mkdir /bricks/brick1/brick
+   53  firewall-cmd --zone=public --add-service=nfs --add-service=samba --add-service=samba-client --permanent
+   54  firewall-cmd --zone=public --add-port=111/tcp --add-port=139/tcp --add-port=445/tcp --add-port=965/tcp --add-port=2049/tcp --add-port=38465-38469/tcp --add-port=631/tcp --add-port=111/udp --add-port=963/udp --add-port=49152-49251/tcp  --permanent
+   55  firewall-cmd --reload
+   56  yum install samba samba-client samba-common samba-vfs-glusterfs selinux-policy-targeted -y
+   57  systemctl start smb.service
+   58  systemctl enable smb.service
+   59  systemctl start nmb.service
+   60  systemctl enable nmb.service
+   61  vim /etc/samba/smb.conf
+   62  gluster volume set replvol server.allow-insecure on
+   63  gluster volume set replvol stat-prefetch off
+   64  gluster volume set replvol storage.batch-fsync-delay-usec 0
+   65   vim /etc/glusterfs/glusterd.vol
+   66  systemctl restart glusterd.service
+   67  smbpasswd -a sambauser
+   68  adduser sambauser
+   69  smbpasswd -a sambauser
+   70  systemctl restart smb.service
+   71  systemctl restart nmb.service
+   72  reboot now
+   73  chmod 777 /bricks/brick1/brick
+   74  service glusterd restart
+   75  history
