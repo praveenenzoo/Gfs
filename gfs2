@@ -1,0 +1,148 @@
+Glusterfs2.
+
+1  yum install epel-release -y
+    2  yum update -y
+    3  vi /etc/selinux/config
+    4  yum install net-tools mlocate vim curl wget telnet -y
+    5  shutdown
+    6  shutdown  now
+    7  rpm -qa |grep gluster
+    8  yum search centos-release-gluster
+    9  yum install centos-release-gluster6.noarch
+   10  yum install glusterfs gluster-cli glusterfs-libs glusterfs-server
+   11  yum update -y
+   12  wget -P /etc/yum.repos.d/ http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo
+   13  yum install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+   14  yum install samba-vfs-glusterfs
+   15  ip a
+   16  reboot now
+   17  hostname
+   18  hostnamectl set-hostname glusterfs2.localhost.com
+   19  lsblk
+   20  yum install glusterfs-server samba -y
+   21  fdisk /dev/sdb
+   22  partprobe /dev/sdb
+   23  pvcreate /dev/sdb1
+   24  vgcreate vg_gluster /dev/sdb1
+   25  lvcreate -L 5G -n brick2 vg_gluster
+   26  mkfs.xfs /dev/vg_gluster/brick2
+   27  lvcreate -L 4G -n brick1 vg_gluster
+   28  mkfs.xfs /dev/vg_gluster/brick1
+   29  mkdir -p /bricks/brick{1,2}
+   30  mount /dev/vg_gluster/brick1 /bricks/brick1
+   31  mount /dev/vg_gluster/brick2 /bricks/brick2
+   32  vim /etc/fstab
+   33  mount -a
+   34  systemctl enable glusterd.service
+   35  systemctl start glusterd.service
+   36  hostname
+   37  ip a
+   38  vim /etc/host
+   39  vim /etc/hosts
+   40   yum install firewalld
+   41   service firewalld start
+   42  chkconfig firewalld on
+   43  firewall-cmd --zone=public --add-port=24007-24008/tcp --permanent
+   44  firewall-cmd --reload
+   45  hostname
+   46  gluster peer status
+   47  firewall-cmd --zone=public --add-port=24009/tcp --permanent
+   48  firewall-cmd --reload
+   49  mkdir /bricks/brick1/brick
+   50  firewall-cmd --zone=public --add-service=nfs --add-service=samba --add-service=samba-client --permanent
+   51  firewall-cmd --zone=public --add-port=111/tcp --add-port=139/tcp --add-port=445/tcp --add-port=965/tcp --add-port=2049/tcp --add-port=38465-38469/tcp --add-port=631/tcp --add-port=111/udp --add-port=963/udp --add-port=49152-49251/tcp  --permanent
+   52  firewall-cmd --reload
+   53  yum install samba samba-client samba-common samba-vfs-glusterfs selinux-policy-targeted -y
+   54  systemctl start smb.service
+   55  systemctl enable smb.service
+   56  systemctl start nmb.service
+   57  systemctl enable nmb.service
+   58  vim /etc/samba/smb.conf
+   59  systemctl start smb.service
+   60  systemctl enable smb.service
+   61  systemctl start nmb.service
+   62  systemctl enable nmb.service
+   63  gluster volume set glustervol1 stat-prefetch off
+   64   gluster volume set replvol stat-prefetch off
+   65  gluster volume set replvol server.allow-insecure on
+   66  gluster volume set replvol storage.batch-fsync-delay-usec 0
+   67   vim /etc/glusterfs/glusterd.vol
+   68  systemctl restart glusterd.service
+   69  smbpasswd -a sambauser
+   70  adduser sambauser
+   71  smbpasswd -a sambauser\
+   72  smbpasswd -a sambauser
+   73  systemctl restart smb.service
+   74  systemctl restart nmb.service
+   75  reboot now
+==========================================================
+[root@glusterfs2 ~]# cat /etc/samba/smb.conf
+# See smb.conf.example for a more detailed config file or
+# read the smb.conf manpage.
+# Run 'testparm' to verify the config is correct after
+# you modified it.
+
+[global]
+        workgroup = SAMBA
+        security = user
+
+        passdb backend = tdbsam
+
+        printing = cups
+        printcap name = cups
+        load printers = yes
+        cups options = raw
+
+[homes]
+        comment = Home Directories
+        valid users = %S, %D%w%S
+        browseable = No
+        read only = No
+        inherit acls = Yes
+
+[printers]
+        comment = All Printers
+        path = /var/tmp
+        printable = Yes
+        create mask = 0600
+        browseable = No
+
+[print$]
+        comment = Printer Drivers
+        path = /var/lib/samba/drivers
+        write list = @printadmin root
+        force group = @printadmin
+        create mask = 0664
+        directory mask = 0775
+
+[gluster-glustervol1]
+comment = For samba share of volume glustervol1
+vfs objects = glusterfs
+glusterfs:volume = replvol
+glusterfs:logfile = /var/log/samba/glusterfs-glustervol1.%M.log
+glusterfs:loglevel = 7
+path = /
+read only = no
+guest ok = yes
+kernel share modes = No
+
+====================================
+vim /etc/glusterfs/glusterd.vol
+
+volume management
+    type mgmt/glusterd
+    option working-directory /var/lib/glusterd
+    option rpc-auth-allow-insecure on
+    option transport-type socket,rdma
+    option transport.socket.keepalive-time 10
+    option transport.socket.keepalive-interval 2
+    option transport.socket.read-fail-log off
+    option transport.socket.listen-port 24007
+    option transport.rdma.listen-port 24008
+    option ping-timeout 0
+    option event-threads 1
+#   option lock-timer 180
+#   option transport.address-family inet6
+#   option base-port 49152
+    option max-port  60999
+end-volume
