@@ -1,0 +1,106 @@
+Glusterfs1.localhost.com
+
+ yum install epel-release -y
+    2  yum update -y
+    3  vi /etc/selinux/config
+    4  yum install net-tools mlocate vim curl wget telnet -y
+    5  shutdown
+    6  shutdown  now
+    7  ip a
+    8  reboot now
+    9  rpm -qa |grep gluster
+   10  yum search centos-release-gluster
+   11  yum install centos-release-gluster37
+   12  yum install centos-release-gluster6.noarch
+   13  yum install glusterfs gluster-cli glusterfs-libs glusterfs-server
+   14  yum update -y
+   15  wget -P /etc/yum.repos.d/ http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo
+   16  yum install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+   17  yum install centos-release-gluster6.noarch
+   18  cat /etc/yum.repos.d/CentOS-Gluster-6.repo
+   19  yum install samba-vfs-glusterfs
+   20  ip a
+   21  hostname
+   22  yum install samba-vfs-glusterfs
+   23  lsblk
+   24  yum install glusterfs-server samba -y
+   25  fdisk /dev/sdb
+   26  partprobe
+   27  partprobe /dev/sdb
+   28  pvcreate /dev/sdb1
+   29  vgcreate vg_gluster /dev/sdb1
+   30  lvcreate -L 5G -n brick1 vg_gluster
+   31  lvcreate -L 5G -n brick2 vg_gluster
+   32  mkfs.xfs /dev/vg_gluster/brick1
+   33  mkdir -p /bricks/brick{1,2}
+   34  lvcreate -L 4G -n brick2 vg_gluster
+   35  mkfs.xfs /dev/vg_gluster/brick2
+   36  mount /dev/vg_gluster/brick1 /bricks/brick1
+   37  mount /dev/vg_gluster/brick2 /bricks/brick2
+   38  vim /etc/fstab
+   39  mount -a
+   40  systemctl enable glusterd.service
+   41  systemctl start glusterd.service
+   42  hostname
+   43  ip a
+   44  vim /etc/hosts
+   45  firewall-cmd --zone=public --add-port=24007-24008/tcp --permanent
+   46  yum install firewalld
+   47  firewall-cmd --zone=public --add-port=24007-24008/tcp --permanent
+   48  service firewalld start
+   49  chkconfig firewalld on
+   50  firewall-cmd --zone=public --add-port=24007-24008/tcp --permanent
+   51  firewall-cmd --reload
+   52  ping glusterfs2.localhost.com
+   53  ping glusterfs3.localhost.com
+   54  gluster peer probe glusterfs2.localhost.com
+   55  gluster peer probe glusterfs3.localhost.com
+   56  gluster peer status
+   57  firewall-cmd --zone=public --add-port=24009/tcp --permanent
+   58  firewall-cmd --reload
+   59  mkdir /bricks/brick1/brick
+   60  gluster volume create replvol replica 3 transport tcp glusterfs1.localhost.com:/bricks/brick1/brick glusterfs2.localhost.com:/bricks/brick1/brick glusterfs2.localhost.com:/bricks/brick1/brick
+   61  ll /bricks/brick1/brick
+   62  gluster volume create replvol replica 3 transport tcp glusterfs1.localhost.com:/bricks/brick1/brick glusterfs2.localhost.com:/bricks/brick1/brick glusterfs3.localhost.com:/bricks/brick1/brick
+   63  gluster volume start replvol
+   64  gluster volume info all
+   65  firewall-cmd --zone=public --add-service=nfs --add-service=samba --add-service=samba-client --permanent
+   66  firewall-cmd --zone=public --add-port=111/tcp --add-port=139/tcp --add-port=445/tcp --add-port=965/tcp --add-port=2049/tcp --add-port=38465-38469/tcp --add-port=631/tcp --add-port=111/udp --add-port=963/udp --add-port=49152-49251/tcp  --permanent
+   67  firewall-cmd --reload
+   68  yum install samba samba-client samba-common samba-vfs-glusterfs selinux-policy-targeted -y
+   69  systemctl start smb.service
+   70  systemctl enable smb.service
+   71  systemctl start nmb.service
+   72  systemctl enable nmb.service
+   73  vim /etc/samba/smb.conf
+   74  gluster volume set glustervol1 stat-prefetch off
+   75  gluster volume set replvol stat-prefetch off
+   76  gluster volume set replvol server.allow-insecure on
+   77  gluster volume set replvol storage.batch-fsync-delay-usec 0
+   78  vim /etc/glusterfs/glusterd.vol
+   79  systemctl restart glusterd.service
+   80  adduser sambauser
+   81  smbpasswd -a sambauser
+   82  setsebool -P samba_share_fusefs on
+   83  systemctl restart smb.service
+   84  systemctl restart nmb.service
+   85  history
+   86  reboot now
+   87  gluster vol info
+   88  gluster peer info
+   89  gluster peer status
+   90  ip a
+   91  cat /etc/passwd
+   92  history
+   93  cat /etc/samba/smb.conf
+   94  history
+[gluster-glustervol1]
+comment = For samba share of volume glustervol1
+vfs objects = glusterfs
+glusterfs:volume = replvol
+glusterfs:logfile = /var/log/samba/glusterfs-glustervol1.%M.log
+glusterfs:loglevel = 7
+path = /
+read only = no
+guest ok = yes
+kernel share modes = No
