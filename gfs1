@@ -2,7 +2,7 @@ Glusterfs1.localhost.com
 
  yum install epel-release -y
     2  yum update -y
-    3  vi /etc/selinux/config
+    3  vi /etc/selinux/config   SELINUX=disabled
     4  yum install net-tools mlocate vim curl wget telnet -y
     5  shutdown
     6  shutdown  now
